@@ -23,17 +23,6 @@ The browser-based prototype includes a structured symptom questionnaire, an inte
 
 **Important implementation detail:** The `endoscan.html` interface uses JavaScript scoring and conditional rules (`calcEndoRisk()` and `assignCluster()`). It does **not** call the saved Python XGBoost or KMeans models to produce the displayed assessment. Its four displayed profiles and associated percentages are predefined interface content, not independently validated clinical subtypes.
 
-### Screenshots
-
-Add screenshots from the finished interface to an `assets/` folder:
-
-![EndoScan patient questionnaire](assets/endoscan-assessment.png)
-
-*Patient questionnaire and interactive anatomical illustration.*
-
-![EndoScan results dashboard](assets/endoscan-results.png)
-
-*Illustrative output from the rule-based assessment dashboard; not a medical prediction.*
 
 ## Research datasets
 
