@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EndoScan — Endometriosis Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #12121a;
+  --bg3: #1a1a26;
+  --surface: #1e1e2e;
+  --border: rgba(160,140,220,0.15);
+  --accent: #c8a8e9;
+  --accent2: #e8b4cb;
+  --accent3: #8ab4d4;
+  --danger: #e8746a;
+  --warn: #e8b46a;
+  --safe: #6abfa8;
+  --text: #f0edf8;
+  --text2: #a89ec0;
+  --text3: #6b6480;
+  --glow: rgba(200,168,233,0.08);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── BACKGROUND MESH ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(120,80,180,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 80%, rgba(180,80,140,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(80,100,200,0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ── GRID OVERLAY ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(160,140,220,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(160,140,220,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+.z1 { position: relative; z-index: 1; }
+
+/* ── HEADER ── */
+header {
+  position: relative; z-index: 10;
+  padding: 2.5rem 4rem 2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(10,10,15,0.8);
+  backdrop-filter: blur(20px);
+}
+
+.logo {
+  display: flex; align-items: center; gap: 1rem;
+}
+
+.logo-mark {
+  width: 44px; height: 44px;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem; color: var(--accent);
+  box-shadow: 0 0 20px rgba(200,168,233,0.2);
+}
+
+.logo-text h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem; font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.logo-text p {
+  font-size: 0.72rem; font-weight: 300;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text3);
+}
+
+.header-stats {
+  display: flex; gap: 2.5rem;
+}
+
+.hstat {
+  text-align: center;
+}
+.hstat .num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem; font-weight: 300; color: var(--accent);
+  display: block;
+}
+.hstat .lbl {
+  font-size: 0.68rem; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--text3);
+}
+
+/* ── TABS ── */
+.tab-nav {
+  position: sticky; top: 0; z-index: 9;
+  display: flex; gap: 0;
+  background: rgba(10,10,15,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 4rem;
+}
+
+.tab-btn {
+  padding: 1.2rem 2.4rem;
+  background: none; border: none;
+  color: var(--text3); cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; font-weight: 400;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.tab-btn:hover { color: var(--text2); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── MAIN LAYOUT ── */
+.main-layout {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 0;
+  min-height: calc(100vh - 160px);
+}
+
+/* ── LEFT: FORM PANEL ── */
+.form-panel {
+  padding: 3rem 4rem;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+/* ── RIGHT: BODY MODEL PANEL ── */
+.body-panel {
+  position: sticky; top: 72px;
+  height: calc(100vh - 72px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  padding: 2rem 1.5rem;
+  background: rgba(18,18,26,0.5);
+  overflow-y: auto;
+}
+
+.body-panel-title {
+  font-size: 0.72rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--text3);
+  margin-bottom: 1rem; text-align: center;
+}
+
+/* ── SECTION HEADERS ── */
+.section-header {
+  margin: 2.5rem 0 1.5rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+.section-header:first-child { margin-top: 0; }
+
+.section-header .sec-num {
+  font-size: 0.65rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 0.3rem; display: block;
+}
+
+.section-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem; font-weight: 400; color: var(--text);
+}
+
+/* ── QUESTION BLOCK ── */
+.q-block {
+  margin-bottom: 2rem;
+}
+
+.q-label {
+  font-size: 1rem; font-weight: 500;
+  color: var(--text); margin-bottom: 0.2rem;
+  line-height: 1.5;
+}
+
+.q-scientific {
+  font-size: 0.75rem; color: var(--accent);
+  font-style: italic; margin-bottom: 0.6rem;
+  letter-spacing: 0.03em;
+}
+
+.q-sub {
+  font-size: 0.82rem; color: var(--text3);
+  margin-bottom: 1rem; line-height: 1.5;
+}
+
+/* ── IMPACT SCALE ── */
+.impact-scale {
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+
+.impact-option {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.85rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.02);
+}
+
+.impact-option:hover {
+  border-color: var(--accent);
+  background: rgba(200,168,233,0.06);
+}
+
+.impact-option.selected {
+  border-color: var(--accent);
+  background: rgba(200,168,233,0.12);
+}
+
+.impact-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 500;
+  color: var(--text2); flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.impact-option.selected .impact-num {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a0a0f;
+}
+
+.impact-desc {
+  flex: 1;
+}
+.impact-desc strong {
+  display: block; font-size: 0.9rem;
+  font-weight: 500; color: var(--text);
+  margin-bottom: 0.1rem;
+}
+.impact-desc span {
+  font-size: 0.78rem; color: var(--text3);
+}
+
+.impact-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── YES/NO TOGGLE ── */
+.yn-toggle {
+  display: flex; gap: 0.8rem;
+}
+
+.yn-btn {
+  flex: 1; padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 10px; cursor: pointer;
+  background: rgba(255,255,255,0.02);
+  color: var(--text2); font-size: 0.9rem;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s; text-align: center;
+}
+.yn-btn:hover { border-color: var(--accent); color: var(--text); }
+.yn-btn.selected {
+  border-color: var(--accent);
+  background: rgba(200,168,233,0.12);
+  color: var(--accent); font-weight: 500;
+}
+.yn-btn.selected-no {
+  border-color: var(--text3);
+  background: rgba(255,255,255,0.04);
+  color: var(--text2);
+}
+
+/* ── TEXT INPUTS ── */
+.text-input {
+  width: 100%;
+  padding: 0.9rem 1.2rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text); font-size: 0.95rem;
+  font-family: 'DM Sans', sans-serif;
+  outline: none; transition: border-color 0.2s;
+}
+.text-input:focus { border-color: var(--accent); }
+
+/* ── SUBMIT BUTTON ── */
+.submit-section {
+  margin-top: 3rem; padding: 2.5rem;
+  background: linear-gradient(135deg, rgba(200,168,233,0.08), rgba(232,180,203,0.06));
+  border: 1px solid rgba(200,168,233,0.2);
+  border-radius: 16px; text-align: center;
+}
+
+.submit-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem; font-weight: 400; color: var(--text);
+  margin-bottom: 0.5rem;
+}
+.submit-sub {
+  font-size: 0.82rem; color: var(--text3);
+  margin-bottom: 1.5rem; line-height: 1.5;
+}
+
+.submit-btn {
+  display: inline-flex; align-items: center; gap: 0.8rem;
+  padding: 1.1rem 3rem;
+  background: linear-gradient(135deg, #c8a8e9, #e8b4cb);
+  border: none; border-radius: 50px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem; font-weight: 500;
+  color: #0a0a0f; letter-spacing: 0.05em;
+  transition: all 0.3s;
+  box-shadow: 0 8px 32px rgba(200,168,233,0.3);
+}
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(200,168,233,0.4);
+}
+.submit-btn:active { transform: translateY(0); }
+
+/* ── RESULTS PANEL ── */
+#results-panel {
+  display: none;
+  padding: 3rem 4rem;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+.results-header {
+  display: flex; align-items: center; gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.risk-badge {
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px; font-size: 0.8rem;
+  font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.risk-high-badge { background: rgba(232,116,106,0.15); color: var(--danger); border: 1px solid rgba(232,116,106,0.3); }
+.risk-med-badge  { background: rgba(232,180,106,0.15); color: var(--warn);   border: 1px solid rgba(232,180,106,0.3); }
+.risk-low-badge  { background: rgba(106,191,168,0.15); color: var(--safe);   border: 1px solid rgba(106,191,168,0.3); }
+
+.result-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.5rem;
+}
+
+.result-card.full { grid-column: 1 / -1; }
+.result-card.accent-border { border-color: rgba(200,168,233,0.3); }
+.result-card.danger-border { border-color: rgba(232,116,106,0.3); }
+.result-card.safe-border   { border-color: rgba(106,191,168,0.3); }
+
+.rc-label {
+  font-size: 0.65rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--text3);
+  margin-bottom: 0.5rem; display: block;
+}
+
+.rc-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem; font-weight: 300; color: var(--text);
+  line-height: 1;
+}
+
+.rc-sub {
+  font-size: 0.8rem; color: var(--text3);
+  margin-top: 0.4rem;
+}
+
+.rc-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem; font-weight: 400; color: var(--text);
+  margin-bottom: 0.6rem;
+}
+
+.rc-body {
+  font-size: 0.88rem; color: var(--text2);
+  line-height: 1.7;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-bar {
+  width: 100%; height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px; overflow: hidden;
+  margin: 0.8rem 0;
+}
+.progress-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 1s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── FLAGS ── */
+.flag-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.flag-item {
+  display: flex; align-items: flex-start; gap: 0.8rem;
+  padding: 0.8rem 1rem;
+  background: rgba(232,116,106,0.06);
+  border: 1px solid rgba(232,116,106,0.15);
+  border-radius: 8px;
+  font-size: 0.85rem; color: var(--text2);
+}
+.flag-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--danger); flex-shrink: 0; margin-top: 5px;
+}
+
+/* ── SCRIPT LINES ── */
+.script-list { display: flex; flex-direction: column; gap: 0.7rem; }
+.script-item {
+  padding: 0.9rem 1.2rem;
+  background: rgba(106,191,168,0.06);
+  border-left: 3px solid var(--safe);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.88rem; color: var(--text2);
+  line-height: 1.5; font-style: italic;
+}
+
+/* ── CLUSTER CARD ── */
+.cluster-info {
+  background: linear-gradient(135deg, rgba(200,168,233,0.08), rgba(232,180,203,0.05));
+  border: 1px solid rgba(200,168,233,0.25);
+  border-radius: 16px; padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+.cluster-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem; font-weight: 400; color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.cluster-stats {
+  display: flex; gap: 1.5rem; margin: 1rem 0;
+}
+.cstat { text-align: center; }
+.cstat .cv {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem; color: var(--accent2); display: block;
+}
+.cstat .cl { font-size: 0.7rem; color: var(--text3); letter-spacing: 0.1em; }
+
+/* ── PAIN CHART ── */
+.pain-bars { display: flex; flex-direction: column; gap: 0.7rem; }
+.pain-row {
+  display: flex; align-items: center; gap: 0.8rem;
+}
+.pain-name {
+  font-size: 0.78rem; color: var(--text3); width: 110px; flex-shrink: 0; text-align: right;
+}
+.pain-track {
+  flex: 1; height: 8px;
+  background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;
+}
+.pain-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 1s cubic-bezier(0.4,0,0.2,1);
+}
+.pain-val { font-size: 0.75rem; color: var(--text3); width: 24px; }
+
+/* ── INTERACTIVE BODY SVG ── */
+.body-svg-wrap { position: relative; width: 100%; max-width: 300px; }
+
+.body-zone {
+  cursor: pointer; transition: all 0.2s;
+}
+.body-zone:hover { filter: brightness(1.3); }
+.body-zone.active { filter: brightness(1.5) drop-shadow(0 0 8px rgba(200,168,233,0.6)); }
+
+.zone-tooltip {
+  position: absolute;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 8px; padding: 0.6rem 1rem;
+  font-size: 0.8rem; color: var(--text);
+  white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity 0.2s;
+  z-index: 100; left: 105%; top: 0;
+}
+.zone-tooltip.visible { opacity: 1; }
+
+/* ── ZONE LEGEND ── */
+.zone-legend {
+  width: 100%; margin-top: 1.2rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.zone-legend-item {
+  display: flex; align-items: center; gap: 0.7rem;
+  font-size: 0.78rem; color: var(--text3);
+  padding: 0.4rem 0.6rem; border-radius: 6px;
+  cursor: pointer; transition: all 0.2s;
+}
+.zone-legend-item:hover { background: rgba(255,255,255,0.04); color: var(--text2); }
+.zone-legend-item.active { color: var(--accent); }
+.zone-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── DOCTOR LAYOUT ── */
+.doc-layout {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+}
+.doc-form { padding: 3rem 4rem; border-right: 1px solid var(--border); }
+.doc-results { padding: 3rem 3rem; }
+
+.doc-section {
+  margin-bottom: 2.5rem;
+}
+
+.slider-wrap { margin-top: 0.8rem; }
+.slider-input {
+  -webkit-appearance: none; width: 100%; height: 4px;
+  border-radius: 2px; outline: none; cursor: pointer;
+  background: linear-gradient(to right, var(--accent) 0%, var(--accent) 50%, rgba(255,255,255,0.1) 50%);
+}
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px;
+  border-radius: 50%; background: var(--accent); cursor: pointer;
+  box-shadow: 0 0 10px rgba(200,168,233,0.4);
+}
+.slider-labels {
+  display: flex; justify-content: space-between;
+  font-size: 0.7rem; color: var(--text3); margin-top: 0.3rem;
+}
+
+.doc-report {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.8rem; margin-bottom: 1.2rem;
+}
+.doc-report-label {
+  font-size: 0.65rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--text3);
+  margin-bottom: 0.6rem;
+}
+.doc-report-val {
+  font-size: 0.9rem; color: var(--text2); line-height: 1.7;
+}
+.doc-report-val strong { color: var(--text); }
+
+.gen-report-btn {
+  width: 100%; padding: 1.1rem;
+  background: linear-gradient(135deg, rgba(200,168,233,0.15), rgba(232,180,203,0.1));
+  border: 1px solid rgba(200,168,233,0.3);
+  border-radius: 12px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; font-weight: 500;
+  color: var(--accent); letter-spacing: 0.05em;
+  transition: all 0.3s; margin-top: 1.5rem;
+}
+.gen-report-btn:hover {
+  background: linear-gradient(135deg, rgba(200,168,233,0.25), rgba(232,180,203,0.15));
+  box-shadow: 0 4px 20px rgba(200,168,233,0.15);
+  transform: translateY(-1px);
+}
+
+/* ── CHECKBOX STYLED ── */
+.check-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.check-item {
+  display: flex; align-items: center; gap: 0.8rem;
+  padding: 0.7rem 1rem; border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; transition: all 0.2s;
+  font-size: 0.88rem; color: var(--text2);
+}
+.check-item:hover { border-color: rgba(200,168,233,0.3); }
+.check-item.checked { border-color: var(--accent); color: var(--text); }
+.check-box {
+  width: 18px; height: 18px; border-radius: 4px;
+  border: 1.5px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; transition: all 0.2s;
+}
+.check-item.checked .check-box {
+  background: var(--accent); border-color: var(--accent); color: #0a0a0f;
+}
+
+/* ── DISCLAIMER ── */
+.disclaimer {
+  font-size: 0.75rem; color: var(--text3);
+  padding: 1rem 1.2rem; margin-top: 2rem;
+  border: 1px solid var(--border); border-radius: 8px;
+  line-height: 1.6; text-align: center;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="z1">
+  <div class="logo">
+    <div class="logo-mark">E</div>
+    <div class="logo-text">
+      <h1>EndoScan</h1>
+      <p>Endometriosis Assessment & Clinical Decision Support</p>
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat"><span class="num">1 in 10</span><span class="lbl">Women affected globally</span></div>
+    <div class="hstat"><span class="num">7–10 yrs</span><span class="lbl">Average diagnostic delay</span></div>
+    <div class="hstat"><span class="num">699</span><span class="lbl">Real patients studied</span></div>
+    <div class="hstat"><span class="num">4</span><span class="lbl">Clinical subtypes found</span></div>
+  </div>
+</header>
+
+<!-- TAB NAV -->
+<nav class="tab-nav z1">
+  <button class="tab-btn active" onclick="switchTab('patient')">Patient Assessment</button>
+  <button class="tab-btn" onclick="switchTab('doctor')">Clinical Decision Support</button>
+</nav>
+
+<!-- ════════════════════════════════════════════
+  PATIENT TAB
+════════════════════════════════════════════ -->
+<div id="tab-patient" class="tab-panel active z1">
+<div class="main-layout">
+
+  <!-- LEFT: FORM -->
+  <div class="form-panel" id="patient-form">
+
+    <!-- SECTION 1: PAIN -->
+    <div class="section-header">
+      <span class="sec-num">Section 01</span>
+      <h2>Pain Assessment</h2>
+    </div>
+
+    <!-- Period pain -->
+    <div class="q-block">
+      <div class="q-label">Dysmenorrhoea (Menstrual / Period Pain)</div>
+      <div class="q-scientific">Dysmenorrhoea — pain occurring during menstruation</div>
+      <div class="q-sub">How does your period pain affect your daily life?</div>
+      <div class="impact-scale" data-key="period_pain">
+        <div class="impact-option" data-val="0" onclick="selectOption(this,'period_pain')">
+          <div class="impact-num">0</div>
+          <div class="impact-desc"><strong>No pain at all</strong><span>I feel completely normal during my period</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="2" onclick="selectOption(this,'period_pain')">
+          <div class="impact-num">2</div>
+          <div class="impact-desc"><strong>Mild — I was uncomfortable but working normally</strong><span>I noticed pain but it didn't change my activities</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="5" onclick="selectOption(this,'period_pain')">
+          <div class="impact-num">5</div>
+          <div class="impact-desc"><strong>Moderate — I had to slow down significantly</strong><span>I managed my day but needed pain relief</span></div>
+          <div class="impact-dot" style="background:var(--warn)"></div>
+        </div>
+        <div class="impact-option" data-val="7" onclick="selectOption(this,'period_pain')">
+          <div class="impact-num">7</div>
+          <div class="impact-desc"><strong>Severe — I could not leave the house</strong><span>I needed to lie down and missed normal activities</span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+        <div class="impact-option" data-val="10" onclick="selectOption(this,'period_pain')">
+          <div class="impact-num">10</div>
+          <div class="impact-desc"><strong>Unbearable — I went to emergency or collapsed</strong><span>The worst pain I have experienced — completely incapacitating</span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pelvic pain -->
+    <div class="q-block">
+      <div class="q-label">Chronic Pelvic Pain (Pelvic / Lower Belly Pain)</div>
+      <div class="q-scientific">Chronic Pelvic Pain — persistent pain in the lower abdomen, even without menstruation</div>
+      <div class="q-sub">How often do you have pain in your lower belly, between your hips?</div>
+      <div class="impact-scale" data-key="pelvic_pain">
+        <div class="impact-option" data-val="0" onclick="selectOption(this,'pelvic_pain')">
+          <div class="impact-num">0</div>
+          <div class="impact-desc"><strong>Never</strong><span>No pain between periods</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="3" onclick="selectOption(this,'pelvic_pain')">
+          <div class="impact-num">3</div>
+          <div class="impact-desc"><strong>Rarely — a few days per month</strong><span>Occasional dull ache that passes quickly</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="6" onclick="selectOption(this,'pelvic_pain')">
+          <div class="impact-num">6</div>
+          <div class="impact-desc"><strong>Often — more than one week per month</strong><span>Persistent pain that I am aware of most days</span></div>
+          <div class="impact-dot" style="background:var(--warn)"></div>
+        </div>
+        <div class="impact-option" data-val="9" onclick="selectOption(this,'pelvic_pain')">
+          <div class="impact-num">9</div>
+          <div class="impact-desc"><strong>Almost every day — constantly present</strong><span>Pain that never fully goes away regardless of my cycle</span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dyschezia -->
+    <div class="q-block">
+      <div class="q-label">Dyschezia (Bowel / Rectal Pain)</div>
+      <div class="q-scientific">Dyschezia — painful defecation, especially during menstruation; may indicate rectal endometriosis</div>
+      <div class="q-sub">Do you experience pain during bowel movements? Does it worsen around your period?</div>
+      <div class="impact-scale" data-key="bowel_pain">
+        <div class="impact-option" data-val="0" onclick="selectOption(this,'bowel_pain')">
+          <div class="impact-num">0</div>
+          <div class="impact-desc"><strong>No pain during bowel movements</strong><span>Using the toilet is completely normal for me</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="3" onclick="selectOption(this,'bowel_pain')">
+          <div class="impact-num">3</div>
+          <div class="impact-desc"><strong>Mild discomfort — I noticed it but pushed through</strong><span>Some cramping or pressure, mainly around my period</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="6" onclick="selectOption(this,'bowel_pain')">
+          <div class="impact-num">6</div>
+          <div class="impact-desc"><strong>Significant pain — I dread using the toilet</strong><span>Sharp or burning pain during bowel movements</span></div>
+          <div class="impact-dot" style="background:var(--warn)"></div>
+        </div>
+        <div class="impact-option" data-val="9" onclick="selectOption(this,'bowel_pain')">
+          <div class="impact-num">9</div>
+          <div class="impact-desc"><strong>Severe — it stops me from going</strong><span>Pain so bad I avoid using the toilet or go to emergency</span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dysuria -->
+    <div class="q-block">
+      <div class="q-label">Dysuria (Bladder / Urination Pain)</div>
+      <div class="q-scientific">Dysuria — painful urination; may indicate bladder endometriosis (vesical endometriosis)</div>
+      <div class="q-sub">Do you experience pain, burning or pressure when urinating?</div>
+      <div class="impact-scale" data-key="bladder_pain">
+        <div class="impact-option" data-val="0" onclick="selectOption(this,'bladder_pain')">
+          <div class="impact-num">0</div>
+          <div class="impact-desc"><strong>No pain when urinating</strong><span>Completely normal</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="3" onclick="selectOption(this,'bladder_pain')">
+          <div class="impact-num">3</div>
+          <div class="impact-desc"><strong>Mild discomfort — I was uncomfortable but managing</strong><span>Some burning or pressure, easy to mistake for UTI</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="6" onclick="selectOption(this,'bladder_pain')">
+          <div class="impact-num">6</div>
+          <div class="impact-desc"><strong>Significant pain — I avoid drinking water</strong><span>Pain bad enough to change my behaviour</span></div>
+          <div class="impact-dot" style="background:var(--warn)"></div>
+        </div>
+        <div class="impact-option" data-val="9" onclick="selectOption(this,'bladder_pain')">
+          <div class="impact-num">9</div>
+          <div class="impact-desc"><strong>Severe — I cannot urinate without crying</strong><span>Extreme pain, possible blood in urine</span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dyspareunia -->
+    <div class="q-block">
+      <div class="q-label">Dyspareunia (Intercourse Pain)</div>
+      <div class="q-scientific">Dyspareunia — pain during or after sexual intercourse; strongly associated with deep infiltrating endometriosis</div>
+      <div class="q-sub">If this does not apply to you, select "Not applicable"</div>
+      <div class="impact-scale" data-key="sex_pain">
+        <div class="impact-option" data-val="-1" onclick="selectOption(this,'sex_pain')">
+          <div class="impact-num" style="font-size:0.7rem">N/A</div>
+          <div class="impact-desc"><strong>Not applicable to me</strong><span>I am not sexually active or this question does not apply</span></div>
+          <div class="impact-dot" style="background:var(--text3)"></div>
+        </div>
+        <div class="impact-option" data-val="0" onclick="selectOption(this,'sex_pain')">
+          <div class="impact-num">0</div>
+          <div class="impact-desc"><strong>No pain during sex</strong><span>Completely comfortable</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="4" onclick="selectOption(this,'sex_pain')">
+          <div class="impact-num">4</div>
+          <div class="impact-desc"><strong>Moderate — I was uncomfortable but continued</strong><span>Noticeable pain or pressure during intercourse</span></div>
+          <div class="impact-dot" style="background:var(--warn)"></div>
+        </div>
+        <div class="impact-option" data-val="8" onclick="selectOption(this,'sex_pain')">
+          <div class="impact-num">8</div>
+          <div class="impact-desc"><strong>Severe — I had to stop or avoid sex entirely</strong><span>Pain significant enough to affect my relationship and wellbeing</span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: OTHER SYMPTOMS -->
+    <div class="section-header">
+      <span class="sec-num">Section 02</span>
+      <h2>Systemic Symptoms</h2>
+    </div>
+
+    <!-- Fatigue -->
+    <div class="q-block">
+      <div class="q-label">Chronic Fatigue (Tiredness beyond normal)</div>
+      <div class="q-scientific">Endometriosis-associated fatigue — persistent exhaustion not relieved by rest; affects up to 88% of endo patients</div>
+      <div class="q-sub">How would you describe your energy levels due to your symptoms?</div>
+      <div class="impact-scale" data-key="fatigue">
+        <div class="impact-option" data-val="0" onclick="selectOption(this,'fatigue')">
+          <div class="impact-num">0</div>
+          <div class="impact-desc"><strong>Normal energy — I feel like myself</strong><span>My tiredness is no different from other people</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="1" onclick="selectOption(this,'fatigue')">
+          <div class="impact-num">1</div>
+          <div class="impact-desc"><strong>A little tired — I needed more rest than usual</strong><span>Noticeably more fatigued but still functioning well</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="3" onclick="selectOption(this,'fatigue')">
+          <div class="impact-num">3</div>
+          <div class="impact-desc"><strong>Very tired — fatigue affects my whole day</strong><span>I needed to rest repeatedly and struggled to keep up</span></div>
+          <div class="impact-dot" style="background:var(--warn)"></div>
+        </div>
+        <div class="impact-option" data-val="4" onclick="selectOption(this,'fatigue')">
+          <div class="impact-num">4</div>
+          <div class="impact-desc"><strong>Exhausted — I could not function normally</strong><span>Extreme tiredness that stopped me from daily activities</span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Other symptoms YES/NO -->
+    <div class="q-block">
+      <div class="q-label">Abdominal Bloating ("Endo Belly")</div>
+      <div class="q-scientific">Endometriosis-associated bloating — severe abdominal distension, often causing visible swelling</div>
+      <div class="q-sub">Do you experience severe abdominal swelling, especially around your period?</div>
+      <div class="yn-toggle">
+        <button class="yn-btn" onclick="selectYN(this,'bloating',1)">Yes, I experience this</button>
+        <button class="yn-btn" onclick="selectYN(this,'bloating',0)">No, I don't</button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Mittelschmerz (Ovulation Pain / Mid-Cycle Pain)</div>
+      <div class="q-scientific">Mittelschmerz — pain occurring mid-cycle (approximately 14 days before menstruation); highly specific indicator of endometriosis</div>
+      <div class="q-sub">Do you get pain in your lower belly about 2 weeks before your period starts?</div>
+      <div class="yn-toggle">
+        <button class="yn-btn" onclick="selectYN(this,'ovulation_pain',1)">Yes, regularly</button>
+        <button class="yn-btn" onclick="selectYN(this,'ovulation_pain',0)">No / not sure</button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Referred Lumbar & Sciatic Pain (Back / Leg Pain)</div>
+      <div class="q-scientific">Referred pain — pain radiating to lower back, buttocks, or legs due to endometriosis pressing on pelvic nerves</div>
+      <div class="q-sub">During your period, does pain travel to your lower back, buttocks, or down your legs?</div>
+      <div class="yn-toggle">
+        <button class="yn-btn" onclick="selectYN(this,'back_leg',1)">Yes, I get this</button>
+        <button class="yn-btn" onclick="selectYN(this,'back_leg',0)">No</button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Nausea & Gastrointestinal Symptoms</div>
+      <div class="q-scientific">Endometriosis-associated nausea — GI symptoms including nausea, vomiting, or diarrhea during menstruation</div>
+      <div class="q-sub">Do you feel sick, nauseous, or have stomach problems around your period?</div>
+      <div class="yn-toggle">
+        <button class="yn-btn" onclick="selectYN(this,'nausea',1)">Yes, I do</button>
+        <button class="yn-btn" onclick="selectYN(this,'nausea',0)">No</button>
+      </div>
+    </div>
+
+    <!-- SECTION 3: MENSTRUAL -->
+    <div class="section-header">
+      <span class="sec-num">Section 03</span>
+      <h2>Menstrual & Reproductive History</h2>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Menorrhagia (Heavy Menstrual Bleeding)</div>
+      <div class="q-scientific">Menorrhagia — abnormally heavy or prolonged menstrual bleeding; may indicate endometrial involvement</div>
+      <div class="q-sub">How heavy is your period bleeding?</div>
+      <div class="impact-scale" data-key="heavy_bleed">
+        <div class="impact-option" data-val="0" onclick="selectOption(this,'heavy_bleed')">
+          <div class="impact-num">0</div>
+          <div class="impact-desc"><strong>Light to normal</strong><span>I change my pad or tampon every 4–6 hours or less frequently</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="1" onclick="selectOption(this,'heavy_bleed')">
+          <div class="impact-num">1</div>
+          <div class="impact-desc"><strong>Heavy — I change protection every 2–3 hours</strong><span>Noticeably heavier than most people I know</span></div>
+          <div class="impact-dot" style="background:var(--warn)"></div>
+        </div>
+        <div class="impact-option" data-val="2" onclick="selectOption(this,'heavy_bleed')">
+          <div class="impact-num">2</div>
+          <div class="impact-desc"><strong>Very heavy — I soak through in under an hour</strong><span>I pass large clots and have accidents despite protection</span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Menstrual Irregularity (Irregular Periods)</div>
+      <div class="q-scientific">Oligomenorrhoea / polymenorrhoea — irregular cycle length, spotting between periods</div>
+      <div class="q-sub">Are your periods regular and predictable?</div>
+      <div class="yn-toggle">
+        <button class="yn-btn" onclick="selectYN(this,'irregular',0)">Yes — always regular</button>
+        <button class="yn-btn" onclick="selectYN(this,'irregular',1)">No — often irregular or unpredictable</button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Progressive Symptom Worsening</div>
+      <div class="q-scientific">Symptom progression — worsening over time is the single most specific clinical indicator of endometriosis versus primary dysmenorrhoea</div>
+      <div class="q-sub">Have your symptoms been getting worse over the years?</div>
+      <div class="impact-scale" data-key="worsening">
+        <div class="impact-option" data-val="0" onclick="selectOption(this,'worsening')">
+          <div class="impact-num">0</div>
+          <div class="impact-desc"><strong>Staying the same</strong><span>My symptoms have not changed over time</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="1" onclick="selectOption(this,'worsening')">
+          <div class="impact-num">1</div>
+          <div class="impact-desc"><strong>Getting slightly worse each year</strong><span>Gradual increase in pain or frequency over time</span></div>
+          <div class="impact-dot" style="background:var(--warn)"></div>
+        </div>
+        <div class="impact-option" data-val="2" onclick="selectOption(this,'worsening')">
+          <div class="impact-num">2</div>
+          <div class="impact-desc"><strong>Getting significantly worse each year</strong><span>A noticeable and rapid increase — what used to be mild is now severe</span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: IMPACT -->
+    <div class="section-header">
+      <span class="sec-num">Section 04</span>
+      <h2>Life Impact & Psychological Wellbeing</h2>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Functional Disability (Pain Impact on Daily Life)</div>
+      <div class="q-scientific">Pain Disability Index — measures how much pain limits participation in daily activities, work, and social life</div>
+      <div class="q-sub">In the last month, how many days did pain stop you from doing normal activities?</div>
+      <div class="impact-scale" data-key="pain_disability">
+        <div class="impact-option" data-val="0" onclick="selectOption(this,'pain_disability')">
+          <div class="impact-num">0</div>
+          <div class="impact-desc"><strong>No days — I functioned normally</strong><span>Pain did not limit my daily life at all</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="16" onclick="selectOption(this,'pain_disability')">
+          <div class="impact-num">1</div>
+          <div class="impact-desc"><strong>1–2 days — mild impact</strong><span>I pushed through but was clearly affected</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="35" onclick="selectOption(this,'pain_disability')">
+          <div class="impact-num">2</div>
+          <div class="impact-desc"><strong>3–5 days — moderate impact</strong><span>I missed some work, school or social events</span></div>
+          <div class="impact-dot" style="background:var(--warn)"></div>
+        </div>
+        <div class="impact-option" data-val="50" onclick="selectOption(this,'pain_disability')">
+          <div class="impact-num">3</div>
+          <div class="impact-desc"><strong>More than 5 days — severe impact</strong><span>Pain significantly affected most of my month</span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+        <div class="impact-option" data-val="65" onclick="selectOption(this,'pain_disability')">
+          <div class="impact-num">4</div>
+          <div class="impact-desc"><strong>Almost every day — I cannot function</strong><span>Pain defines my daily life and I cannot work or study</span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Psychological Wellbeing — Depressive Symptoms (PHQ-2)</div>
+      <div class="q-scientific">PHQ-2 Depression Screening — validated 2-item Patient Health Questionnaire; 41% of endo patients screen positive vs 8% general population</div>
+      <div class="q-sub">In the last 2 weeks, have you felt down, hopeless, or lost interest in things you used to enjoy?</div>
+      <div class="impact-scale" data-key="depression">
+        <div class="impact-option" data-val="0" onclick="selectOption(this,'depression')">
+          <div class="impact-num">0</div>
+          <div class="impact-desc"><strong>No — I have felt like myself</strong><span>My mood has been normal</span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="2" onclick="selectOption(this,'depression')">
+          <div class="impact-num">2</div>
+          <div class="impact-desc"><strong>Yes, sometimes — a few days here and there</strong><span>Low mood on some days, but it passes</span></div>
+          <div class="impact-dot" style="background:var(--warn)"></div>
+        </div>
+        <div class="impact-option" data-val="4" onclick="selectOption(this,'depression')">
+          <div class="impact-num">4</div>
+          <div class="impact-desc"><strong>Yes, often — most days feel difficult</strong><span>Persistent low mood, hopelessness, or loss of interest</span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Psychological Wellbeing — Anxiety (GAD-2)</div>
+      <div class="q-scientific">GAD-2 Anxiety Screening — Generalised Anxiety Disorder screening; 43% of endo patients screen positive vs 8% general population</div>
+      <div class="q-sub">In the last 2 weeks, have you felt anxious, on edge, or unable to stop worrying?</div>
+      <div class="impact-scale" data-key="anxiety">
+        <div class="impact-option" data-val="0" onclick="selectOption(this,'anxiety')">
+          <div class="impact-num">0</div>
+          <div class="impact-desc"><strong>No — I have felt calm and in control</strong><span></span></div>
+          <div class="impact-dot" style="background:var(--safe)"></div>
+        </div>
+        <div class="impact-option" data-val="2" onclick="selectOption(this,'anxiety')">
+          <div class="impact-num">2</div>
+          <div class="impact-desc"><strong>Yes, sometimes — I was worried more than usual</strong><span></span></div>
+          <div class="impact-dot" style="background:var(--warn)"></div>
+        </div>
+        <div class="impact-option" data-val="4" onclick="selectOption(this,'anxiety')">
+          <div class="impact-num">4</div>
+          <div class="impact-desc"><strong>Yes, often — constant worry I cannot control</strong><span></span></div>
+          <div class="impact-dot" style="background:var(--danger)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: BACKGROUND -->
+    <div class="section-header">
+      <span class="sec-num">Section 05</span>
+      <h2>Personal & Clinical Background</h2>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Age</div>
+      <div class="q-sub">Your current age in years</div>
+      <input type="number" class="text-input" id="pt_age" value="28" min="14" max="60">
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">BMI (Body Mass Index)</div>
+      <div class="q-sub">If you don't know your BMI, leave this as 23 (population average)</div>
+      <input type="number" class="text-input" id="pt_bmi" value="23" min="14" max="45" step="0.1">
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Hormone Level Abnormality</div>
+      <div class="q-scientific">Hormonal dysregulation — abnormal oestrogen, progesterone, or LH/FSH levels associated with endometriosis</div>
+      <div class="q-sub">Has a doctor ever told you your hormone levels are abnormal?</div>
+      <div class="yn-toggle">
+        <button class="yn-btn" onclick="selectYN(this,'hormone_abn',1)">Yes</button>
+        <button class="yn-btn" onclick="selectYN(this,'hormone_abn',0)">No / Not tested</button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Infertility / Subfertility</div>
+      <div class="q-scientific">Endometriosis-associated infertility — present in up to 50% of infertile women; may be only presenting symptom in some cases</div>
+      <div class="q-sub">Have you had difficulty getting pregnant, or been told you may have fertility concerns?</div>
+      <div class="yn-toggle">
+        <button class="yn-btn" onclick="selectYN(this,'infertility',1)">Yes</button>
+        <button class="yn-btn" onclick="selectYN(this,'infertility',0)">No / Not applicable</button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label">Family History of Endometriosis</div>
+      <div class="q-scientific">Hereditary predisposition — first-degree relatives with endometriosis confer a 7-fold increased risk; strong genetic component identified</div>
+      <div class="q-sub">Does your mother, sister, or aunt have endometriosis?</div>
+      <div class="yn-toggle">
+        <button class="yn-btn" onclick="selectYN(this,'family_hx',1)">Yes</button>
+        <button class="yn-btn" onclick="selectYN(this,'family_hx',0)">No / I don't know</button>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="submit-section">
+      <div class="submit-title">Ready to see your assessment?</div>
+      <div class="submit-sub">Your answers will be analyzed against data from 699 real endometriosis patients from the ROXWELL Baseline Study.<br>This takes less than a second.</div>
+      <button class="submit-btn" onclick="runAssessment()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Generate My Endometriosis Assessment
+      </button>
+    </div>
+
+    <div class="disclaimer">
+      ⚠ EndoScan is a research prototype developed at Purdue University Fort Wayne for Harvard HSIL Hackathon 2026.
+      It is not a certified medical device and does not provide a clinical diagnosis.
+      Endometriosis can only be definitively confirmed via laparoscopy.
+      Always consult a qualified healthcare professional.
+    </div>
+
+  </div><!-- end form-panel -->
+
+  <!-- RIGHT: BODY MODEL -->
+  <div class="body-panel">
+    <div class="body-panel-title">Tap a body region to learn about endo involvement</div>
+
+    <div class="body-svg-wrap" id="body-wrap">
+      <svg viewBox="0 0 200 520" width="100%" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 30px rgba(200,168,233,0.1))">
+
+        <!-- HEAD -->
+        <ellipse cx="100" cy="42" rx="28" ry="33" fill="#2a1f3d" stroke="rgba(200,168,233,0.3)" stroke-width="1"/>
+        <!-- Hair -->
+        <path d="M72 35 Q68 15 80 10 Q100 4 120 10 Q132 15 128 35" fill="#3d2a5a" stroke="none"/>
+        <!-- Neck -->
+        <rect x="90" y="73" width="20" height="18" fill="#2a1f3d"/>
+
+        <!-- SHOULDERS + UPPER BODY -->
+        <path d="M60 91 Q45 95 38 115 L38 200 Q38 208 46 208 L154 208 Q162 208 162 200 L162 115 Q155 95 140 91 Z" fill="#1e1630" stroke="rgba(200,168,233,0.2)" stroke-width="1"/>
+
+        <!-- CHEST / BUST -->
+        <ellipse cx="82" cy="145" rx="18" ry="14" fill="#241b38" stroke="rgba(200,168,233,0.15)" stroke-width="0.5"/>
+        <ellipse cx="118" cy="145" rx="18" ry="14" fill="#241b38" stroke="rgba(200,168,233,0.15)" stroke-width="0.5"/>
+
+        <!-- UTERUS REGION HIGHLIGHT -->
+        <ellipse cx="100" cy="240" rx="22" ry="16" fill="rgba(200,168,233,0.08)" stroke="rgba(200,168,233,0.25)" stroke-width="1.5" stroke-dasharray="4 2"/>
+        <text x="100" y="243" text-anchor="middle" font-size="6" fill="rgba(200,168,233,0.6)" font-family="DM Sans, sans-serif">uterus</text>
+
+        <!-- PELVIS ZONE (clickable) -->
+        <g class="body-zone" id="zone-pelvis" onclick="highlightZone('pelvis')" transform="translate(0,0)">
+          <path d="M55 210 Q45 220 42 240 Q40 265 55 275 Q70 285 100 287 Q130 285 145 275 Q160 265 158 240 Q155 220 145 210 Z"
+                fill="rgba(200,168,233,0.06)" stroke="rgba(200,168,233,0.3)" stroke-width="1.5"/>
+          <text x="100" y="255" text-anchor="middle" font-size="8" fill="rgba(200,168,233,0.7)" font-family="DM Sans,sans-serif" font-weight="500">Pelvis / Uterus</text>
+        </g>
+
+        <!-- OVARIES (clickable) -->
+        <g class="body-zone" id="zone-ovary-l" onclick="highlightZone('ovaries')">
+          <ellipse cx="72" cy="246" rx="11" ry="8" fill="rgba(232,180,203,0.12)" stroke="rgba(232,180,203,0.4)" stroke-width="1.2"/>
+          <text x="72" y="249" text-anchor="middle" font-size="5.5" fill="rgba(232,180,203,0.8)" font-family="DM Sans,sans-serif">ovary</text>
+        </g>
+        <g class="body-zone" id="zone-ovary-r" onclick="highlightZone('ovaries')">
+          <ellipse cx="128" cy="246" rx="11" ry="8" fill="rgba(232,180,203,0.12)" stroke="rgba(232,180,203,0.4)" stroke-width="1.2"/>
+          <text x="128" y="249" text-anchor="middle" font-size="5.5" fill="rgba(232,180,203,0.8)" font-family="DM Sans,sans-serif">ovary</text>
+        </g>
+
+        <!-- FALLOPIAN TUBES -->
+        <path d="M83 240 Q76 232 72 238" fill="none" stroke="rgba(232,180,203,0.35)" stroke-width="1.5"/>
+        <path d="M117 240 Q124 232 128 238" fill="none" stroke="rgba(232,180,203,0.35)" stroke-width="1.5"/>
+
+        <!-- BOWEL/RECTUM (clickable) -->
+        <g class="body-zone" id="zone-bowel" onclick="highlightZone('bowel')">
+          <path d="M68 280 Q62 295 65 315 Q70 330 85 335 Q100 338 115 335 Q130 330 135 315 Q138 295 132 280 Z"
+                fill="rgba(138,180,212,0.08)" stroke="rgba(138,180,212,0.3)" stroke-width="1.2"/>
+          <text x="100" y="312" text-anchor="middle" font-size="7.5" fill="rgba(138,180,212,0.7)" font-family="DM Sans,sans-serif">Bowel / Rectum</text>
+        </g>
+
+        <!-- BLADDER (clickable) -->
+        <g class="body-zone" id="zone-bladder" onclick="highlightZone('bladder')">
+          <ellipse cx="100" cy="268" rx="16" ry="11" fill="rgba(106,191,168,0.1)" stroke="rgba(106,191,168,0.35)" stroke-width="1.2"/>
+          <text x="100" y="271" text-anchor="middle" font-size="6" fill="rgba(106,191,168,0.8)" font-family="DM Sans,sans-serif">Bladder</text>
+        </g>
+
+        <!-- LOWER BACK (clickable) -->
+        <g class="body-zone" id="zone-back" onclick="highlightZone('back')">
+          <rect x="42" y="175" width="20" height="35" rx="4" fill="rgba(232,180,106,0.08)" stroke="rgba(232,180,106,0.3)" stroke-width="1"/>
+          <text x="52" y="197" text-anchor="middle" font-size="5.5" fill="rgba(232,180,106,0.7)" font-family="DM Sans,sans-serif">Back</text>
+          <rect x="138" y="175" width="20" height="35" rx="4" fill="rgba(232,180,106,0.08)" stroke="rgba(232,180,106,0.3)" stroke-width="1"/>
+          <text x="148" y="197" text-anchor="middle" font-size="5.5" fill="rgba(232,180,106,0.7)" font-family="DM Sans,sans-serif">Back</text>
+        </g>
+
+        <!-- ARMS -->
+        <path d="M38 115 Q25 130 22 160 Q20 190 28 210 L38 200 Z" fill="#1e1630" stroke="rgba(200,168,233,0.15)" stroke-width="0.8"/>
+        <path d="M162 115 Q175 130 178 160 Q180 190 172 210 L162 200 Z" fill="#1e1630" stroke="rgba(200,168,233,0.15)" stroke-width="0.8"/>
+
+        <!-- LEGS -->
+        <g class="body-zone" id="zone-legs" onclick="highlightZone('legs')">
+          <path d="M56 287 Q48 320 46 370 Q44 420 50 470 L80 470 L88 370 L92 287 Z"
+                fill="rgba(160,140,220,0.06)" stroke="rgba(160,140,220,0.2)" stroke-width="1"/>
+          <path d="M144 287 Q152 320 154 370 Q156 420 150 470 L120 470 L112 370 L108 287 Z"
+                fill="rgba(160,140,220,0.06)" stroke="rgba(160,140,220,0.2)" stroke-width="1"/>
+          <text x="65" y="390" text-anchor="middle" font-size="6" fill="rgba(160,140,220,0.5)" font-family="DM Sans,sans-serif">Leg</text>
+          <text x="135" y="390" text-anchor="middle" font-size="6" fill="rgba(160,140,220,0.5)" font-family="DM Sans,sans-serif">Leg</text>
+        </g>
+
+        <!-- FEET -->
+        <ellipse cx="65" cy="475" rx="18" ry="8" fill="#1a1426"/>
+        <ellipse cx="135" cy="475" rx="18" ry="8" fill="#1a1426"/>
+
+        <!-- ENDO LESION DOTS (decorative indicators) -->
+        <circle cx="100" cy="232" r="2.5" fill="rgba(200,168,233,0.6)" id="lesion1">
+          <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="78" cy="258" r="2" fill="rgba(232,180,203,0.5)" id="lesion2">
+          <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2.5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="122" cy="258" r="2" fill="rgba(232,180,203,0.5)" id="lesion3">
+          <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2.2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="100" cy="295" r="2" fill="rgba(138,180,212,0.5)" id="lesion4">
+          <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+
+      <!-- Zone tooltip -->
+      <div class="zone-tooltip" id="zone-tooltip"></div>
+    </div>
+
+    <!-- Zone info panel -->
+    <div id="zone-info" style="display:none; width:100%; margin-top:1rem; padding:1rem; background:rgba(200,168,233,0.06); border:1px solid rgba(200,168,233,0.2); border-radius:10px;">
+      <div style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem;" id="zone-title">Zone</div>
+      <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;" id="zone-desc"></div>
+    </div>
+
+    <!-- Zone legend -->
+    <div class="zone-legend" id="zone-legend">
+      <div class="zone-legend-item" onclick="highlightZone('pelvis')">
+        <div class="zone-dot" style="background:rgba(200,168,233,0.6)"></div>
+        <div><div style="font-size:0.82rem;color:var(--text2);font-weight:500;">Uterus & Peritoneum</div><div style="font-size:0.72rem;color:var(--text3);">Most common site</div></div>
+      </div>
+      <div class="zone-legend-item" onclick="highlightZone('ovaries')">
+        <div class="zone-dot" style="background:rgba(232,180,203,0.7)"></div>
+        <div><div style="font-size:0.82rem;color:var(--text2);font-weight:500;">Ovaries (Endometrioma)</div><div style="font-size:0.72rem;color:var(--text3);">Chocolate cysts</div></div>
+      </div>
+      <div class="zone-legend-item" onclick="highlightZone('bowel')">
+        <div class="zone-dot" style="background:rgba(138,180,212,0.7)"></div>
+        <div><div style="font-size:0.82rem;color:var(--text2);font-weight:500;">Bowel & Rectum</div><div style="font-size:0.72rem;color:var(--text3);">Deep infiltrating endo</div></div>
+      </div>
+      <div class="zone-legend-item" onclick="highlightZone('bladder')">
+        <div class="zone-dot" style="background:rgba(106,191,168,0.7)"></div>
+        <div><div style="font-size:0.82rem;color:var(--text2);font-weight:500;">Bladder</div><div style="font-size:0.72rem;color:var(--text3);">Vesical endometriosis</div></div>
+      </div>
+      <div class="zone-legend-item" onclick="highlightZone('back')">
+        <div class="zone-dot" style="background:rgba(232,180,106,0.7)"></div>
+        <div><div style="font-size:0.82rem;color:var(--text2);font-weight:500;">Lower Back & Nerve Roots</div><div style="font-size:0.72rem;color:var(--text3);">Referred sciatic pain</div></div>
+      </div>
+      <div class="zone-legend-item" onclick="highlightZone('legs')">
+        <div class="zone-dot" style="background:rgba(160,140,220,0.5)"></div>
+        <div><div style="font-size:0.82rem;color:var(--text2);font-weight:500;">Legs (Sciatic Endo)</div><div style="font-size:0.72rem;color:var(--text3);">Catamenial sciatica</div></div>
+      </div>
+    </div>
+
+    <!-- Scoring progress -->
+    <div id="score-preview" style="width:100%;margin-top:1.5rem;padding:1rem;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;display:none;">
+      <div style="font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);margin-bottom:0.8rem;">Answers so far</div>
+      <div id="score-bars"></div>
+    </div>
+
+  </div><!-- end body-panel -->
+
+</div><!-- end main-layout -->
+
+<!-- RESULTS -->
+<div id="results-panel" class="z1">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="results-header">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--text);margin-bottom:0.3rem;">Your Assessment Results</div>
+        <div style="font-size:0.82rem;color:var(--text3);">Based on 699 real endometriosis patients — ROXWELL Baseline Study (Meyrose et al.)</div>
+      </div>
+      <div id="r-risk-badge" class="risk-badge"></div>
+      <button onclick="scrollToForm()" style="margin-left:auto;padding:0.6rem 1.2rem;border:1px solid var(--border);border-radius:8px;background:none;color:var(--text2);cursor:pointer;font-size:0.82rem;font-family:'DM Sans',sans-serif;">
+        ← Edit answers
+      </button>
+    </div>
+
+    <div class="result-grid">
+      <!-- Risk score -->
+      <div class="result-card" id="r-risk-card">
+        <span class="rc-label">Endometriosis Risk Score</span>
+        <div class="rc-value" id="r-risk-pct">—</div>
+        <div class="progress-bar"><div class="progress-fill" id="r-risk-bar" style="width:0%"></div></div>
+        <div class="rc-sub" id="r-risk-sub"></div>
+      </div>
+
+      <!-- Cluster -->
+      <div class="result-card accent-border">
+        <span class="rc-label">Patient Subtype (from ROXWELL n=699)</span>
+        <div class="rc-title" id="r-cluster-name">—</div>
+        <div class="rc-body" id="r-cluster-desc"></div>
+      </div>
+
+      <!-- Cluster stats -->
+      <div class="result-card full">
+        <span class="rc-label">In our study, patients matching your profile showed:</span>
+        <div class="cluster-stats" id="r-cluster-stats"></div>
+        <div style="font-size:0.82rem;color:var(--text3);margin-top:0.5rem;padding-top:0.8rem;border-top:1px solid var(--border);" id="r-missed-flag"></div>
+      </div>
+
+      <!-- Pain chart -->
+      <div class="result-card">
+        <span class="rc-label">Your Pain Profile</span>
+        <div class="pain-bars" id="r-pain-bars"></div>
+      </div>
+
+      <!-- Red flags -->
+      <div class="result-card danger-border">
+        <span class="rc-label">Clinical Red Flags Detected</span>
+        <div class="flag-list" id="r-flags"></div>
+      </div>
+
+      <!-- Script -->
+      <div class="result-card safe-border full">
+        <span class="rc-label">What to say at your appointment — bring this with you</span>
+        <div class="script-list" id="r-scripts"></div>
+        <div style="margin-top:1rem;padding:1rem;background:rgba(200,168,233,0.06);border-radius:8px;font-size:0.85rem;color:var(--text2);line-height:1.6;">
+          <strong style="color:var(--accent);">Your right as a patient:</strong> You can ask your GP for a referral to a gynaecologist or endometriosis specialist. If your concern is dismissed, you have the right to seek a second opinion. Endometriosis affects 1 in 10 women — your symptoms deserve to be taken seriously.
+        </div>
+      </div>
+
+      <!-- Recommendation -->
+      <div class="result-card full" id="r-rec-card">
+        <span class="rc-label">Recommended Action</span>
+        <div class="rc-title" id="r-rec-title"></div>
+        <div class="rc-body" id="r-rec-body"></div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      ⚠ This tool is a research prototype for educational purposes. It does not provide a medical diagnosis.
+      Endometriosis can only be definitively confirmed via laparoscopy.
+      Developed at Purdue University Fort Wayne | Harvard HSIL Hackathon 2026 | Based on ROXWELL Baseline Study (Meyrose et al., n=699)
+    </div>
+  </div>
+</div>
+
+</div><!-- end patient tab -->
+
+<!-- ════════════════════════════════════════════
+  DOCTOR TAB
+════════════════════════════════════════════ -->
+<div id="tab-doctor" class="tab-panel z1">
+<div class="doc-layout">
+
+  <!-- DOCTOR FORM -->
+  <div class="doc-form">
+    <div class="section-header" style="margin-top:0">
+      <span class="sec-num">Clinical Input</span>
+      <h2>Patient Symptom Scores</h2>
+    </div>
+    <div style="font-size:0.85rem;color:var(--text3);margin-bottom:2rem;line-height:1.6;">
+      Enter assessed symptom scores. The system generates a structured clinical summary
+      referenced against 699 real endometriosis patients (ROXWELL Baseline Study, Meyrose et al.)
+    </div>
+
+    <div class="doc-section">
+      <div class="q-label" style="margin-bottom:1rem;">Demographics</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div>
+          <div class="q-sub">Age</div>
+          <input type="number" class="text-input" id="d_age" value="28">
+        </div>
+        <div>
+          <div class="q-sub">BMI</div>
+          <input type="number" class="text-input" id="d_bmi" value="23" step="0.1">
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-section">
+      <div class="q-label" style="margin-bottom:1rem;">Pain Scores (0 = none · 10 = worst possible)</div>
+
+      <div class="q-sub" style="margin-bottom:0.3rem;">Dysmenorrhoea (menstrual pain)</div>
+      <div class="slider-wrap">
+        <input type="range" class="slider-input" id="d_period" min="0" max="10" value="6"
+               oninput="updateSlider(this,'d_period_val')">
+        <div class="slider-labels"><span>None (0)</span><span id="d_period_val">6</span><span>Worst (10)</span></div>
+      </div>
+
+      <div class="q-sub" style="margin-top:1rem;margin-bottom:0.3rem;">Chronic pelvic pain</div>
+      <div class="slider-wrap">
+        <input type="range" class="slider-input" id="d_pelvic" min="0" max="10" value="5"
+               oninput="updateSlider(this,'d_pelvic_val')">
+        <div class="slider-labels"><span>None</span><span id="d_pelvic_val">5</span><span>Worst</span></div>
+      </div>
+
+      <div class="q-sub" style="margin-top:1rem;margin-bottom:0.3rem;">Dyschezia (bowel pain)</div>
+      <div class="slider-wrap">
+        <input type="range" class="slider-input" id="d_dyschezia" min="0" max="10" value="2"
+               oninput="updateSlider(this,'d_dyschezia_val')">
+        <div class="slider-labels"><span>None</span><span id="d_dyschezia_val">2</span><span>Worst</span></div>
+      </div>
+
+      <div class="q-sub" style="margin-top:1rem;margin-bottom:0.3rem;">Dysuria (bladder pain)</div>
+      <div class="slider-wrap">
+        <input type="range" class="slider-input" id="d_dysuria" min="0" max="10" value="2"
+               oninput="updateSlider(this,'d_dysuria_val')">
+        <div class="slider-labels"><span>None</span><span id="d_dysuria_val">2</span><span>Worst</span></div>
+      </div>
+
+      <div class="q-sub" style="margin-top:1rem;margin-bottom:0.3rem;">Dyspareunia (intercourse pain)</div>
+      <div class="slider-wrap">
+        <input type="range" class="slider-input" id="d_dyspareunia" min="0" max="10" value="3"
+               oninput="updateSlider(this,'d_dyspareunia_val')">
+        <div class="slider-labels"><span>None / N/A</span><span id="d_dyspareunia_val">3</span><span>Worst</span></div>
+      </div>
+    </div>
+
+    <div class="doc-section">
+      <div class="q-label" style="margin-bottom:0.8rem;">Psychosocial Assessment</div>
+      <div class="q-sub" style="margin-bottom:0.3rem;">Pain disability score (PDI, 0–70)</div>
+      <div class="slider-wrap">
+        <input type="range" class="slider-input" id="d_pain_dis" min="0" max="70" value="30"
+               oninput="updateSlider(this,'d_pain_dis_val')">
+        <div class="slider-labels"><span>No disability</span><span id="d_pain_dis_val">30</span><span>Totally disabled</span></div>
+      </div>
+
+      <div class="q-sub" style="margin-top:1rem;margin-bottom:0.3rem;">Depression score PHQ (0–6)</div>
+      <div class="slider-wrap">
+        <input type="range" class="slider-input" id="d_dep" min="0" max="6" value="2"
+               oninput="updateSlider(this,'d_dep_val')">
+        <div class="slider-labels"><span>None</span><span id="d_dep_val">2</span><span>Severe (6)</span></div>
+      </div>
+
+      <div class="q-sub" style="margin-top:1rem;margin-bottom:0.3rem;">Anxiety score GAD (0–6)</div>
+      <div class="slider-wrap">
+        <input type="range" class="slider-input" id="d_anx" min="0" max="6" value="2"
+               oninput="updateSlider(this,'d_anx_val')">
+        <div class="slider-labels"><span>None</span><span id="d_anx_val">2</span><span>Severe (6)</span></div>
+      </div>
+    </div>
+
+    <div class="doc-section">
+      <div class="q-label" style="margin-bottom:0.8rem;">Clinical Indicators</div>
+      <div class="check-group">
+        <div class="check-item" onclick="toggleCheck(this,'d_hormone')">
+          <div class="check-box">✓</div>Hormone level abnormality
+          <input type="hidden" id="d_hormone" value="0">
+        </div>
+        <div class="check-item" onclick="toggleCheck(this,'d_infertility')">
+          <div class="check-box">✓</div>Infertility / subfertility
+          <input type="hidden" id="d_infertility" value="0">
+        </div>
+        <div class="check-item" onclick="toggleCheck(this,'d_fam_hx')">
+          <div class="check-box">✓</div>Family history of endometriosis (1° relative)
+          <input type="hidden" id="d_fam_hx" value="0">
+        </div>
+        <div class="check-item" onclick="toggleCheck(this,'d_heavy')">
+          <div class="check-box">✓</div>Menorrhagia — soaking through protection in &lt;1 hour
+          <input type="hidden" id="d_heavy" value="0">
+        </div>
+        <div class="check-item" onclick="toggleCheck(this,'d_irreg')">
+          <div class="check-box">✓</div>Menstrual irregularity
+          <input type="hidden" id="d_irreg" value="0">
+        </div>
+        <div class="check-item" onclick="toggleCheck(this,'d_back_leg')">
+          <div class="check-box">✓</div>Referred lumbar / sciatic pain
+          <input type="hidden" id="d_back_leg" value="0">
+        </div>
+        <div class="check-item" onclick="toggleCheck(this,'d_ovulation')">
+          <div class="check-box">✓</div>Mittelschmerz — mid-cycle ovulation pain
+          <input type="hidden" id="d_ovulation" value="0">
+        </div>
+        <div class="check-item" onclick="toggleCheck(this,'d_worsening')">
+          <div class="check-box">✓</div>Progressive worsening of symptoms over time
+          <input type="hidden" id="d_worsening" value="0">
+        </div>
+      </div>
+    </div>
+
+    <button class="gen-report-btn" onclick="generateDocReport()">
+      Generate Clinical Report →
+    </button>
+  </div>
+
+  <!-- DOCTOR RESULTS -->
+  <div class="doc-results" id="doc-results">
+    <div id="doc-placeholder" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1rem;">
+      <div style="width:60px;height:60px;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--text2);">Clinical report will appear here</div>
+      <div style="font-size:0.82rem;color:var(--text3);max-width:280px;line-height:1.6;">Enter patient scores on the left and click Generate Clinical Report</div>
+    </div>
+
+    <div id="doc-report-content" style="display:none;animation:fadeIn 0.4s ease;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;margin-bottom:0.3rem;">Clinical Report</div>
+      <div style="font-size:0.72rem;color:var(--text3);margin-bottom:1.5rem;letter-spacing:0.05em;">EndoScan | ROXWELL Baseline Study Reference (Meyrose et al., n=699)</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1.2rem;">
+        <div style="padding:1rem;background:var(--surface);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:0.3rem;">Endo Risk Score</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;" id="dr-risk">—</div>
+        </div>
+        <div style="padding:1rem;background:var(--surface);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:0.3rem;">Risk Tier</div>
+          <div style="font-size:1rem;font-weight:500;" id="dr-tier">—</div>
+        </div>
+        <div style="padding:1rem;background:var(--surface);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:0.3rem;">Patient Subtype</div>
+          <div style="font-size:0.88rem;font-weight:500;color:var(--accent);" id="dr-cluster">—</div>
+        </div>
+        <div style="padding:1rem;background:var(--surface);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:0.3rem;">Pain Disability Percentile</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;" id="dr-pct">—</div>
+        </div>
+      </div>
+
+      <div class="doc-report" id="dr-assessment">
+        <div class="doc-report-label">Clinical Assessment</div>
+        <div class="doc-report-val" id="dr-assessment-text"></div>
+      </div>
+
+      <div class="doc-report" style="border-color:rgba(232,116,106,0.2);" id="dr-flags-section">
+        <div class="doc-report-label">Red Flags</div>
+        <div id="dr-flags"></div>
+      </div>
+
+      <div class="doc-report" style="border-color:rgba(200,168,233,0.2);">
+        <div class="doc-report-label">Population Context — ROXWELL Study (n=699)</div>
+        <div class="doc-report-val" id="dr-population"></div>
+      </div>
+
+      <div class="doc-report" style="border-color:rgba(232,180,106,0.2);">
+        <div class="doc-report-label">Physician Learning Note</div>
+        <div class="doc-report-val" id="dr-learning"></div>
+      </div>
+
+      <div class="doc-report" id="dr-rec" style="border-color:rgba(106,191,168,0.25);background:rgba(106,191,168,0.04);">
+        <div class="doc-report-label">Recommended Action</div>
+        <div class="doc-report-val" style="font-size:1rem;" id="dr-rec-text"></div>
+      </div>
+
+      <div class="disclaimer">
+        EndoScan is a clinical decision support tool — not a diagnostic device.
+        Definitive diagnosis requires laparoscopy with histological confirmation.
+        Reference: ROXWELL Baseline Study, Meyrose et al. (n=699). Harvard HSIL Hackathon 2026.
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- end doctor tab -->
+
+<script>
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+const state = {
+  period_pain: null, pelvic_pain: null, bowel_pain: null,
+  bladder_pain: null, sex_pain: null, fatigue: null,
+  heavy_bleed: null, worsening: null, pain_disability: null,
+  depression: null, anxiety: null,
+  bloating: null, ovulation_pain: null, back_leg: null, nausea: null,
+  irregular: null, hormone_abn: null, infertility: null, family_hx: null
+};
+
+// ═══════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// IMPACT SCALE SELECTION
+// ═══════════════════════════════════════════
+function selectOption(el, key) {
+  const scale = el.closest('.impact-scale');
+  scale.querySelectorAll('.impact-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  state[key] = parseInt(el.dataset.val);
+  updateScorePreview();
+  highlightBodyZoneFromKey(key);
+}
+
+function selectYN(el, key, val) {
+  const group = el.closest('.yn-toggle');
+  group.querySelectorAll('.yn-btn').forEach(b => { b.classList.remove('selected','selected-no'); });
+  el.classList.add(val ? 'selected' : 'selected-no');
+  state[key] = val;
+  updateScorePreview();
+}
+
+// ═══════════════════════════════════════════
+// BODY ZONE INTERACTION
+// ═══════════════════════════════════════════
+const ZONE_INFO = {
+  pelvis: {
+    title: "Uterus & Peritoneum",
+    desc: "The most common site of endometriosis. Lesions grow on the outer surface of the uterus, pelvic peritoneum, and uterosacral ligaments. Causes dysmenorrhoea and chronic pelvic pain. Associated with your menstrual pain and pelvic pain scores."
+  },
+  ovaries: {
+    title: "Ovaries — Endometrioma",
+    desc: "Endometriomas ('chocolate cysts') are cysts filled with old blood forming in the ovaries. Present in 17–44% of endo patients. Associated with infertility and ovulation pain (Mittelschmerz). May be visible on ultrasound."
+  },
+  bowel: {
+    title: "Bowel & Rectum — Deep Infiltrating Endometriosis",
+    desc: "Lesions penetrating the bowel wall, rectum, or rectovaginal septum. Causes dyschezia (painful bowel movements), bloating, and alternating bowel habits. Often mistaken for IBS, adding years to diagnosis. This is the most missed endo site in primary care."
+  },
+  bladder: {
+    title: "Bladder — Vesical Endometriosis",
+    desc: "Lesions on or within the bladder wall. Causes dysuria (painful urination), urinary urgency, and frequency — commonly mistaken for recurrent UTI. Blood in urine (haematuria) may occur at menstruation."
+  },
+  back: {
+    title: "Lower Back & Sacral Nerve Roots",
+    desc: "Lesions pressing on the uterosacral ligaments or sacral nerve roots cause referred pain to the lower back, buttocks and legs. Indicates more advanced or deep infiltrating disease. Pain often worsens dramatically during menstruation."
+  },
+  legs: {
+    title: "Legs — Catamenial Sciatica",
+    desc: "Rare but specific: endometrial implants on the sciatic nerve cause leg pain, weakness, or numbness that worsens cyclically with menstruation. Often severely misdiagnosed for years as orthopaedic or neurological conditions."
+  }
+};
+
+function highlightZone(zone) {
+  document.querySelectorAll('.body-zone').forEach(z => z.classList.remove('active'));
+  document.querySelectorAll('.zone-legend-item').forEach(i => i.classList.remove('active'));
+
+  const info = ZONE_INFO[zone];
+  if (!info) return;
+
+  // Highlight matching SVG zones
+  const zoneMap = {
+    pelvis: ['zone-pelvis'],
+    ovaries: ['zone-ovary-l','zone-ovary-r'],
+    bowel: ['zone-bowel'],
+    bladder: ['zone-bladder'],
+    back: ['zone-back'],
+    legs: ['zone-legs']
+  };
+  (zoneMap[zone] || []).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+  });
+
+  document.getElementById('zone-info').style.display = 'block';
+  document.getElementById('zone-title').textContent = info.title;
+  document.getElementById('zone-desc').textContent  = info.desc;
+}
+
+function highlightBodyZoneFromKey(key) {
+  const map = {
+    bowel_pain:'bowel', bladder_pain:'bladder',
+    period_pain:'pelvis', pelvic_pain:'pelvis',
+    sex_pain:'pelvis', back_leg:'back'
+  };
+  if (map[key]) highlightZone(map[key]);
+}
+
+// ═══════════════════════════════════════════
+// SCORE PREVIEW
+// ═══════════════════════════════════════════
+function updateScorePreview() {
+  const preview = document.getElementById('score-preview');
+  const bars    = document.getElementById('score-bars');
+  const keys    = ['period_pain','pelvic_pain','bowel_pain','bladder_pain','depression'];
+  const labels  = ['Menstrual pain','Pelvic pain','Bowel pain','Bladder pain','Mood'];
+  const maxVals = [10, 9, 9, 9, 4];
+
+  const hasAny = keys.some(k => state[k] !== null);
+  if (!hasAny) { preview.style.display = 'none'; return; }
+  preview.style.display = 'block';
+
+  bars.innerHTML = keys.map((k,i) => {
+    const v = state[k];
+    if (v === null || v < 0) return '';
+    const pct = Math.min(100, (v / maxVals[i]) * 100);
+    const col = pct > 70 ? 'var(--danger)' : pct > 40 ? 'var(--warn)' : 'var(--safe)';
+    return `<div class="pain-row" style="margin-bottom:0.5rem;">
+      <div class="pain-name" style="width:90px;font-size:0.7rem;">${labels[i]}</div>
+      <div class="pain-track" style="height:5px;">
+        <div class="pain-fill" style="width:${pct}%;background:${col};"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// CLUSTER LOGIC
+// ═══════════════════════════════════════════
+const CLUSTERS = {
+  0: {
+    name: "Cluster 0 — High pain with severe psychological burden",
+    shortName: "High pain + severe psychological burden",
+    dep:92, anx:90, cant_work:18,
+    desc: "This is the highest-burden patient profile in our study. Patients in this cluster experience both significant physical pain AND severe psychological impact simultaneously. These patients face the longest diagnostic delays because their psychological symptoms are often treated separately from the physical pain — missing the connection entirely.",
+    missed: "Psychological symptoms (depression, anxiety) in this subtype are frequently treated in isolation without recognising them as part of endometriosis. Both require treatment together.",
+    action: "Urgent referral to gynaecology specialist. Concurrent mental health evaluation strongly recommended. Do not treat psychological symptoms without investigating the underlying physical cause.",
+    recColor: "var(--danger)"
+  },
+  1: {
+    name: "Cluster 1 — Moderate pain, psychologically resilient",
+    shortName: "Moderate pain, psychologically resilient",
+    dep:18, anx:17, cant_work:9,
+    desc: "Patients with moderate physical symptoms and relatively preserved psychological wellbeing. This may represent earlier-stage endometriosis or patients who have developed strong coping mechanisms. This is the best window for intervention — before psychological burden escalates.",
+    missed: "In this subtype, symptoms are often dismissed as 'normal period pain' because the patient appears to be managing well psychologically. Physical pain is still clinically significant and warrants investigation.",
+    action: "Referral for further evaluation recommended. Educate patient that worsening is common without treatment. Monitor closely.",
+    recColor: "var(--warn)"
+  },
+  2: {
+    name: "Cluster 2 — Widespread multi-site physical pain",
+    shortName: "Widespread multi-site physical pain",
+    dep:69, anx:67, cant_work:15,
+    desc: "The highest physical pain burden across multiple pelvic organs — bladder, bowel, and pelvic pain all significantly elevated. This profile is consistent with deep infiltrating endometriosis affecting multiple organ systems. Psychological impact is moderate to severe.",
+    missed: "Bowel and bladder symptoms in this subtype are most frequently attributed to IBS or recurrent UTI before endometriosis is considered — this is the single largest contributor to diagnostic delay in this group.",
+    action: "Urgent specialist referral. Multi-organ involvement warrants MRI or transvaginal ultrasound. Consider colorectal surgical involvement. Rule out endometrioma on ovaries.",
+    recColor: "var(--danger)"
+  },
+  3: {
+    name: "Cluster 3 — High pain, psychologically coping",
+    shortName: "High pain, psychologically coping",
+    dep:12, anx:21, cant_work:5,
+    desc: "Significant physical pain but lower psychological burden — the largest group in our study. These patients have high pain levels but are managing psychologically, possibly through normalisation of their symptoms over time. Physical burden is high but may be underreported.",
+    missed: "Patients in this group often underreport symptoms because they have normalised the pain over time. Ask specifically: 'How long have you had these symptoms?' and 'Has this been getting worse each year?'",
+    action: "Referral recommended. Pain management is the priority. Educate patient that worsening is common — what seems manageable now may not remain so without treatment.",
+    recColor: "var(--warn)"
+  }
+};
+
+function assignCluster(s) {
+  const dep = s.depression || 0;
+  const anx = s.anxiety || 0;
+  const bow = s.bowel_pain || 0;
+  const bla = s.bladder_pain || 0;
+  const dis = s.pain_disability || 0;
+
+  if (dep >= 4 && anx >= 4) return 0;
+  if (bow >= 6 && bla >= 6) return 2;
+  if (dis <= 16 && dep <= 0 && anx <= 0) return 3;
+  return 1;
+}
+
+function calcEndoRisk(s) {
+  const age    = parseInt(document.getElementById('pt_age').value) || 28;
+  const bmi    = parseFloat(document.getElementById('pt_bmi').value) || 23.0;
+  const pain   = (s.period_pain || 0) / 10;
+  const pelvic = (s.pelvic_pain || 0) / 9;
+  const hormone= s.hormone_abn || 0;
+  const inf    = s.infertility || 0;
+  const irreg  = s.irregular || 0;
+
+  let risk = pain * 0.30 + pelvic * 0.20 + hormone * 0.20 + inf * 0.12 + irreg * 0.08;
+  risk += (Math.min(age,45) - 18) / 27 * 0.05;
+
+  if (s.family_hx)      risk *= 1.35;
+  if (s.worsening >= 2) risk *= 1.20;
+  else if (s.worsening >= 1) risk *= 1.10;
+  if (s.bowel_pain >= 6 && s.bladder_pain >= 6) risk *= 1.10;
+  if (s.back_leg)       risk *= 1.05;
+  if (s.ovulation_pain) risk *= 1.05;
+
+  return Math.min(0.97, Math.max(0.02, risk));
+}
+
+function painDisabilityPct(score) {
+  const pts = [[0,0],[16,22],[35,46],[50,74],[65,91],[70,100]];
+  for (let i = 0; i < pts.length - 1; i++) {
+    if (score >= pts[i][0] && score <= pts[i+1][0]) {
+      const f = (score - pts[i][0]) / (pts[i+1][0] - pts[i][0]);
+      return Math.round(pts[i][1] + f * (pts[i+1][1] - pts[i][1]));
+    }
+  }
+  return 100;
+}
+
+// ═══════════════════════════════════════════
+// RUN PATIENT ASSESSMENT
+// ═══════════════════════════════════════════
+function runAssessment() {
+  const risk    = calcEndoRisk(state);
+  const cluster = assignCluster(state);
+  const cp      = CLUSTERS[cluster];
+  const rp      = Math.round(risk * 100);
+  const pdPct   = painDisabilityPct(state.pain_disability || 0);
+
+  // Risk display
+  const riskEl = document.getElementById('r-risk-pct');
+  riskEl.textContent = rp + '%';
+  riskEl.style.color = rp >= 60 ? 'var(--danger)' : rp >= 35 ? 'var(--warn)' : 'var(--safe)';
+
+  const barColor = rp >= 60 ? 'linear-gradient(90deg,var(--danger),#f0a0a0)' :
+                   rp >= 35 ? 'linear-gradient(90deg,var(--warn),#f0d080)' :
+                              'linear-gradient(90deg,var(--safe),#80dfc0)';
+  document.getElementById('r-risk-bar').style.cssText = `width:${rp}%;background:${barColor};`;
+
+  const badge = document.getElementById('r-risk-badge');
+  if (rp >= 60) { badge.textContent = 'High Risk'; badge.className = 'risk-badge risk-high-badge'; }
+  else if (rp >= 35) { badge.textContent = 'Moderate Risk'; badge.className = 'risk-badge risk-med-badge'; }
+  else { badge.textContent = 'Lower Risk'; badge.className = 'risk-badge risk-low-badge'; }
+
+  document.getElementById('r-risk-sub').textContent =
+    rp >= 60 ? 'Your symptom profile strongly suggests endometriosis. Specialist referral is recommended.' :
+    rp >= 35 ? 'Notable risk indicators present. A doctor visit and further investigation is recommended.' :
+               'Lower risk based on current symptoms. Monitor closely — see a doctor if symptoms worsen.';
+
+  // Cluster
+  document.getElementById('r-cluster-name').textContent = cp.name;
+  document.getElementById('r-cluster-desc').textContent = cp.desc;
+
+  document.getElementById('r-cluster-stats').innerHTML = `
+    <div class="cstat"><span class="cv" style="color:var(--danger)">${cp.dep}%</span><span class="cl">Major depression<br>in this subtype</span></div>
+    <div class="cstat"><span class="cv" style="color:var(--warn)">${cp.anx}%</span><span class="cl">Anxiety disorder<br>in this subtype</span></div>
+    <div class="cstat"><span class="cv">${cp.cant_work}%</span><span class="cl">Unable to work<br>due to symptoms</span></div>
+    <div class="cstat"><span class="cv">${pdPct}th</span><span class="cl">Pain disability<br>percentile</span></div>`;
+
+  document.getElementById('r-missed-flag').innerHTML =
+    `<strong style="color:var(--accent2);">Commonly missed in this subtype:</strong> ${cp.missed}`;
+
+  // Pain bars
+  const painData = [
+    ['Menstrual pain', state.period_pain || 0, 10],
+    ['Pelvic pain', state.pelvic_pain || 0, 9],
+    ['Bowel pain', state.bowel_pain || 0, 9],
+    ['Bladder pain', state.bladder_pain || 0, 9],
+    ['Intercourse pain', Math.max(0, state.sex_pain || 0), 8],
+    ['Fatigue', (state.fatigue || 0) * 2.5, 10],
+  ];
+  document.getElementById('r-pain-bars').innerHTML = painData.map(([n, v, mx]) => {
+    const pct = Math.round(v / mx * 100);
+    const col = pct > 70 ? 'var(--danger)' : pct > 40 ? 'var(--warn)' : 'var(--safe)';
+    return `<div class="pain-row">
+      <div class="pain-name">${n}</div>
+      <div class="pain-track"><div class="pain-fill" style="width:${pct}%;background:${col};"></div></div>
+      <div class="pain-val">${Math.round(v)}</div>
+    </div>`;
+  }).join('');
+
+  // Red flags
+  const flags = [];
+  if ((state.period_pain || 0) >= 7)     flags.push('Severe dysmenorrhoea — pain rated severe or unbearable');
+  if ((state.bowel_pain || 0) >= 6)      flags.push('Significant dyschezia — possible deep infiltrating endometriosis');
+  if ((state.bladder_pain || 0) >= 6)    flags.push('Severe dysuria — often confused with UTI; may indicate vesical endo');
+  if (state.back_leg)                    flags.push('Referred lumbar / sciatic pain — possible nerve root involvement');
+  if ((state.heavy_bleed || 0) >= 2)     flags.push('Menorrhagia — soaking through protection; clinical red flag');
+  if (state.family_hx)                   flags.push('1° family history of endometriosis — 7× increased risk (genetic predisposition)');
+  if ((state.worsening || 0) >= 1)       flags.push('Progressive symptom worsening — key differentiator from primary dysmenorrhoea');
+  if (state.ovulation_pain)              flags.push('Mittelschmerz — mid-cycle pain; highly specific indicator of endometriosis');
+  if ((state.fatigue || 0) >= 3)         flags.push('Severe endometriosis-associated fatigue affecting daily function');
+  if ((state.depression || 0) >= 4)      flags.push('PHQ screening positive for major depression');
+
+  document.getElementById('r-flags').innerHTML = flags.length
+    ? flags.map(f => `<div class="flag-item"><div class="flag-dot"></div>${f}</div>`).join('')
+    : '<div style="font-size:0.85rem;color:var(--text3);">No major red flags detected at current symptom levels</div>';
+
+  // Scripts
+  const pp  = state.period_pain || 0;
+  const pdz = state.pelvic_pain || 0;
+  const scripts = [
+    `"I experience menstrual pain that I would rate as ${pp > 5 ? 'severe' : pp > 2 ? 'moderate' : 'mild'} — ${pp >= 7 ? 'it stops me from functioning and I cannot leave the house' : pp >= 5 ? 'it significantly slows me down and I need pain relief' : 'it is noticeable but I push through'}."`,
+    `"My pelvic pain occurs ${pdz >= 9 ? 'almost every day of my cycle, not just during my period' : pdz >= 6 ? 'frequently, for more than a week each month' : 'occasionally between periods'}."`,
+  ];
+  if ((state.bowel_pain || 0) >= 3)   scripts.push('"I also have significant pain during bowel movements, especially around my period — I have been told this could be a sign of endometriosis."');
+  if ((state.bladder_pain || 0) >= 3) scripts.push('"I experience painful urination that has been recurring — I have been tested for UTI repeatedly but it keeps coming back."');
+  if (state.back_leg)                 scripts.push('"During my period, I get pain that travels from my lower back down into my legs."');
+  if (state.family_hx)                scripts.push('"My [mother/sister] has been diagnosed with endometriosis, which I understand means I am at significantly higher risk."');
+  if ((state.worsening || 0) >= 1)    scripts.push('"My symptoms have been getting progressively worse each year — they are not staying the same level."');
+  scripts.push('"I would like to request a referral to a gynaecologist or endometriosis specialist for a thorough evaluation."');
+
+  document.getElementById('r-scripts').innerHTML = scripts.map(s =>
+    `<div class="script-item">${s}</div>`).join('');
+
+  // Recommendation
+  document.getElementById('r-rec-card').style.borderColor = cp.recColor;
+  document.getElementById('r-rec-title').textContent = cp.action.split('.')[0];
+  document.getElementById('r-rec-body').textContent  = cp.action;
+
+  // Show results
+  document.getElementById('patient-form').style.display = 'none';
+  document.getElementById('results-panel').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function scrollToForm() {
+  document.getElementById('results-panel').style.display = 'none';
+  document.getElementById('patient-form').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══════════════════════════════════════════
+// DOCTOR REPORT
+// ═══════════════════════════════════════════
+function updateSlider(el, outId) {
+  document.getElementById(outId).textContent = el.value;
+  const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+  el.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) ${pct}%, rgba(255,255,255,0.1) ${pct}%)`;
+}
+
+function toggleCheck(el, hiddenId) {
+  el.classList.toggle('checked');
+  const inp = document.getElementById(hiddenId);
+  inp.value = el.classList.contains('checked') ? '1' : '0';
+}
+
+function generateDocReport() {
+  const age       = parseInt(document.getElementById('d_age').value) || 28;
+  const bmi       = parseFloat(document.getElementById('d_bmi').value) || 23;
+  const period    = parseInt(document.getElementById('d_period').value) || 0;
+  const pelvic    = parseInt(document.getElementById('d_pelvic').value) || 0;
+  const dyschezia = parseInt(document.getElementById('d_dyschezia').value) || 0;
+  const dysuria   = parseInt(document.getElementById('d_dysuria').value) || 0;
+  const dyspareun = parseInt(document.getElementById('d_dyspareunia').value) || 0;
+  const painDis   = parseInt(document.getElementById('d_pain_dis').value) || 0;
+  const dep       = parseInt(document.getElementById('d_dep').value) || 0;
+  const anx       = parseInt(document.getElementById('d_anx').value) || 0;
+
+  const hormone   = parseInt(document.getElementById('d_hormone').value) || 0;
+  const infert    = parseInt(document.getElementById('d_infertility').value) || 0;
+  const famHx     = parseInt(document.getElementById('d_fam_hx').value) || 0;
+  const heavy     = parseInt(document.getElementById('d_heavy').value) || 0;
+  const irreg     = parseInt(document.getElementById('d_irreg').value) || 0;
+  const backLeg   = parseInt(document.getElementById('d_back_leg').value) || 0;
+  const ovul      = parseInt(document.getElementById('d_ovulation').value) || 0;
+  const worsening = parseInt(document.getElementById('d_worsening').value) || 0;
+
+  // Risk
+  let risk = (period/10)*0.28 + (pelvic/10)*0.22 + hormone*0.18 + infert*0.12 + irreg*0.08;
+  risk += (Math.min(age,45)-18)/27*0.05;
+  if (famHx)      risk *= 1.35;
+  if (worsening)  risk *= 1.15;
+  if (dyschezia >= 6 && dysuria >= 6) risk *= 1.10;
+  if (backLeg)    risk *= 1.05;
+  if (ovul)       risk *= 1.05;
+  risk = Math.min(0.97, Math.max(0.02, risk));
+
+  const rp = Math.round(risk * 100);
+  const tier = rp >= 60 ? 'HIGH' : rp >= 35 ? 'MODERATE' : 'LOWER';
+  const tierColor = rp >= 60 ? 'var(--danger)' : rp >= 35 ? 'var(--warn)' : 'var(--safe)';
+
+  // Cluster
+  let cluster = 1;
+  if (dep >= 4 && anx >= 4) cluster = 0;
+  else if (dyschezia >= 6 && dysuria >= 6) cluster = 2;
+  else if (painDis <= 15 && dep <= 1) cluster = 3;
+  const cp = CLUSTERS[cluster];
+  const pct = painDisabilityPct(painDis);
+
+  // Flags
+  const flags = [];
+  if (period >= 7)     flags.push('Severe dysmenorrhoea (≥7/10)');
+  if (dyschezia >= 5)  flags.push('Significant dyschezia — consider deep infiltrating endometriosis');
+  if (dysuria >= 5)    flags.push('Dysuria ≥5/10 — rule out recurrent UTI, consider vesical endo');
+  if (backLeg)         flags.push('Referred lumbar / sciatic pain — possible nerve root involvement');
+  if (heavy)           flags.push('Menorrhagia — soaking through protection; clinically significant');
+  if (famHx)           flags.push('1° family history — genetic risk approximately 7-fold elevated');
+  if (worsening)       flags.push('Progressive symptom worsening — key diagnostic signal');
+  if (ovul)            flags.push('Mittelschmerz present — highly specific for endometriosis');
+  if (dep >= 4)        flags.push('PHQ depression score ≥4 — screening positive for major depression');
+  if (anx >= 4)        flags.push('GAD anxiety score ≥4 — screening positive for anxiety disorder');
+
+  // Populate report
+  document.getElementById('dr-risk').textContent = rp + '%';
+  document.getElementById('dr-risk').style.color = tierColor;
+  document.getElementById('dr-tier').textContent = tier + ' RISK';
+  document.getElementById('dr-tier').style.color = tierColor;
+  document.getElementById('dr-cluster').textContent = cp.name;
+  document.getElementById('dr-pct').textContent = pct + 'th';
+
+  document.getElementById('dr-assessment-text').innerHTML =
+    `This <strong>${age}-year-old</strong> patient presents with an estimated endometriosis risk of <strong>${rp}%</strong> (${tier} tier).
+     Her symptom profile matches <strong>${cp.name}</strong> — identified from 699 real endometriosis patients in the ROXWELL Baseline Study (Meyrose et al.).
+     Pain disability score places her at the <strong>${pct}th percentile</strong> of this clinical population.
+     ${famHx ? '<strong>Family history is present, increasing risk approximately 7-fold.</strong> ' : ''}
+     ${worsening ? 'Symptoms are progressively worsening, which is the strongest single differentiator between endometriosis and primary dysmenorrhoea.' : ''}`;
+
+  document.getElementById('dr-flags').innerHTML = flags.length
+    ? flags.map(f => `<div class="flag-item"><div class="flag-dot"></div>${f}</div>`).join('')
+    : '<div style="font-size:0.85rem;color:var(--text3);">No major clinical red flags at current levels</div>';
+
+  document.getElementById('dr-population').innerHTML =
+    `Patients in <strong>Cluster ${cluster} (${cp.shortName})</strong> in our study of 699 real endo patients showed:
+     <ul style="margin:0.6rem 0 0 1rem;line-height:2;">
+       <li><strong>${cp.dep}% major depression rate</strong> vs ~8% general population</li>
+       <li><strong>${cp.anx}% anxiety disorder rate</strong> vs ~8% general population</li>
+       <li><strong>${cp.cant_work}% unable to work</strong> due to their condition</li>
+     </ul>`;
+
+  document.getElementById('dr-learning').innerHTML =
+    `<strong>For future patient recognition:</strong> ${cp.missed}`;
+
+  document.getElementById('dr-rec-text').innerHTML =
+    `<strong style="color:${cp.recColor};">${cp.action}</strong>`;
+
+  document.getElementById('doc-placeholder').style.display = 'none';
+  document.getElementById('doc-report-content').style.display = 'block';
+}
+
+// ═══════════════════════════════════════════
+// INIT SLIDERS
+// ═══════════════════════════════════════════
+document.querySelectorAll('.slider-input').forEach(s => {
+  const pct = ((s.value - s.min) / (s.max - s.min)) * 100;
+  s.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) ${pct}%, rgba(255,255,255,0.1) ${pct}%)`;
+});
+</script>
+</body>
+</html>

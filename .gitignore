@@ -1,0 +1,28 @@
+
+# Python environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.key
+
+# Local datasets (review permissions before publishing)
+data/
+
+# Saved machine learning models
+models/*.joblib
+models/*.pkl
+
+# Temporary files
+.ipynb_checkpoints/
+.vscode/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
